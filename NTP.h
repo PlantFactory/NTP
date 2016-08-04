@@ -7,9 +7,15 @@
  * Created:  2016-04-22
  */
 
+
+#ifndef ESP8266
 #include <Ethernet.h>
 #include <EthernetUdp.h>
 #include <Dns.h>
+#else
+#include <ESP8266WiFi.h>
+#include <WiFiUDP.h>
+#endif
 
 #define NTP_DEFAULT_TIMEOUT_MS 5000
 #define NTP_PORT 123
@@ -17,15 +23,28 @@
 class NTPClient
 {
   public:
+
+  private:
+#ifndef ESP8266
+    EthernetUDP Udp;
+#else
+    WiFiUDP Udp;
+#endif
+
+  public:
     void begin(){
     }
     int getTime(String server_host, uint32_t *timestamp1970){
-      DNSClient dns;
       IPAddress server_ip;
       uint32_t timestamp1900; // ntp timestamp
 
+#ifndef ESP8266
+      DNSClient dns;
       dns.begin(Ethernet.dnsServerIP());
       dns.getHostByName(server_host.c_str(), server_ip);
+#else
+      WiFi.hostByName(server_host.c_str(), server_ip);
+#endif
 
       Udp.begin(1024+(millis() & 0xFF));
       sendPacket(server_ip);
@@ -36,7 +55,6 @@ class NTPClient
     }
 
   private:
-
     uint32_t convert1900to1970(uint32_t timestamp1900)
     {
       return timestamp1900 - 2208988800UL;
@@ -60,6 +78,9 @@ class NTPClient
       uint8_t oneByteBuf;
 
       while(!Udp.parsePacket()){
+#ifdef ESP8266
+    ESP.wdtFeed();
+#endif
         if(millis() - start_ms > timeout_ms){
           return -1;
         }
@@ -77,8 +98,6 @@ class NTPClient
 
       return 0;
     }
-
-    EthernetUDP Udp;
 };
 
 #endif   /* NTP_H_INCLUDED */
