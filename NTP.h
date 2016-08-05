@@ -14,7 +14,7 @@
 #include <Dns.h>
 #else
 #include <ESP8266WiFi.h>
-#include <WiFiUDP.h>
+#include <WiFiUdp.h>
 #endif
 
 #define NTP_DEFAULT_TIMEOUT_MS 5000
