@@ -20,6 +20,7 @@ class NTPClient
     void begin(){
     }
     int getTime(String server_host, uint32_t *timestamp1970){
+      int ret = 0;
       DNSClient dns;
       IPAddress server_ip;
       uint32_t timestamp1900; // ntp timestamp
@@ -29,10 +30,10 @@ class NTPClient
 
       Udp.begin(1024+(millis() & 0xFF));
       sendPacket(server_ip);
-      recvPacket(NTP_DEFAULT_TIMEOUT_MS, timestamp1900);
+      ret = recvPacket(NTP_DEFAULT_TIMEOUT_MS, timestamp1900);
       *timestamp1970 = convert1900to1970(timestamp1900);
 
-      return 0;
+      return ret;
     }
 
   private:
